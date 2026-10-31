@@ -95,13 +95,14 @@ function EntryForm({
       const nextBalance = isDeposit
         ? goal.balance + minorUnits
         : goal.balance - minorUnits
+      const amountLabel = formatMinorUnits(minorUnits)
+      const nextBalanceLabel = formatMinorUnits(nextBalance)
+      const actionLabel = isDeposit ? "added" : "withdrawn"
 
       toast.add({
         type: "success",
         title: isDeposit ? "Deposit recorded" : "Withdrawal recorded",
-        description: `${formatMinorUnits(minorUnits)} ${
-          isDeposit ? "added" : "withdrawn"
-        }. Balance is now ${formatMinorUnits(nextBalance)}.`,
+        description: `${amountLabel} ${actionLabel}. Balance is now ${nextBalanceLabel}.`,
       })
       onClose()
     } catch (submitError) {

@@ -57,7 +57,7 @@ Avatars and progress bar tracks use `rounded-full`.
 
 shadcn/ui on top of Tailwind is used for all reusable components. Before building any common UI piece, check whether shadcn has it and add it with the CLI rather than writing it from scratch. Configure the CLI so generated components land in `components/client/ui/`, since they use client-side interactivity. Restyle them with the tokens above, and do not hardcode colors inside them.
 
-Components Finn is expected to use from shadcn: Button, Input, Label, Form, Card, Dialog, Sheet (for the mobile deposit and withdraw sheet), AlertDialog (for delete confirmations), Avatar, Progress, Popover and Calendar (for the target date), Badge, Skeleton, Toast (success and error confirmations), and Dropdown Menu.
+Components Finn is expected to use from shadcn: Button, Input, Label, Form, Card, Dialog, Sheet (for the mobile deposit and withdraw sheet), AlertDialog (for delete confirmations), Avatar, Progress, Popover and Calendar (for the target date), Badge, Skeleton, Toast (success confirmations), and Dropdown Menu.
 
 Toast uses shadcn's Base UI variant at `components/client/ui/toast.tsx` because the current `radix-nova` style has no toast item. Mount its `<Toaster />` once in the root layout and call `toast.add(...)` from client components. Do not add an "Undo" action to transaction toasts, since transactions are insert-only.
 
