@@ -5,11 +5,11 @@ change.
 
 ## Current Phase
 
-- Complete (Spec 3 — sign-in card)
+- Complete (Spec 4 — sign-up card)
 
 ## Current Goal
 
-- The sign-in screen renders an email/password card with social buttons and a sign-up link.
+- The sign-up screen renders an email/password card with social buttons and a sign-in link, reusing the sign-in card shell.
 
 ## Completed
 
@@ -31,6 +31,11 @@ change.
 - Refined the sign-in card: white surface, `rounded-2xl` corners, a soft token-based shadow, larger bold title, and more generous card padding.
 - Added a show/hide password toggle inside the password input using Lucide `Eye` / `EyeOff` icons.
 - Verified with `npm run lint`, `npx tsc --noEmit`, and `npm run build`.
+- Spec 4: extracted the shared `AuthCard` shell, `SocialAuthButtons`, and `PasswordInput` into `components/client/auth/` so sign-in and sign-up reuse the same card.
+- Added the `/sign-up` page and `SignUpCard` with email, password, and verify-password fields, show/hide toggles, a "Create account" submit button, and an "Already have an account? Sign in" link.
+- Sign-up has no Google/SSO buttons; the submit button stays disabled and a red `FieldError` appears when the two passwords differ.
+- The sign-in card's "Sign up" link now reaches the new `/sign-up` page; both links use `ROUTES` from `constants/routes.ts`.
+- Verified with `npm run lint`, `npx tsc --noEmit`, and `npm run build`.
 
 ## In Progress
 
@@ -38,11 +43,13 @@ change.
 
 ## Next Up
 
-- Spec 4 (not defined yet).
+- Spec 5 (not defined yet).
 
 ## Open Questions
 
 - Spec 3 mentions "a new page for sign up" but the card title, link text, and screen list describe a sign-in screen. Built the sign-in page at `/sign-in`; the sign-up link points to `/sign-up`, which does not exist yet and was out of scope.
+- Spec 4 says the sign-up "Sign in" link has "no routes for now". Assumed this refers to auth/API wiring rather than navigation, so the link points to the existing `/sign-in` page. Confirm if it should be inert instead.
+- Verify password validates only that both fields match; there are no strength rules yet. Social buttons were removed from sign-up but remain on sign-in, since sign-in SSO is part of the product overview.
 
 ## Architecture Decisions
 
