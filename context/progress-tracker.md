@@ -50,6 +50,7 @@ change.
 - The Clerk Frontend API URL supplied by the user is set as `CLERK_JWT_ISSUER_DOMAIN` on the existing `flippant-sardine-77` Convex development deployment. `npx convex dev` synced the schema and functions and reported them ready.
 - `npx convex run users:getCurrentUser "{}"` found the deployed function and returned the expected signed-out authorization error.
 - Moved the existing home page into `app/(app)/page.tsx`; the URL remains `/`, and signed-in users land there after Clerk redirects.
+- The signed-in home page displays the saved username and profile photo from Convex Storage, with initials when no photo was uploaded. Added a Clerk sign-out button beside the profile.
 - A signed-in browser request reached Convex but had no verified Convex identity. Updated the current-user hooks to skip queries until Convex authentication succeeds and show an onboarding setup message instead of a runtime error.
 - The selected Clerk app still needs its Convex integration enabled or a JWT template named `convex`; after that, verify onboarding from a signed-in browser session.
 

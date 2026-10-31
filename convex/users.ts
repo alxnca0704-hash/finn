@@ -20,10 +20,18 @@ export const getCurrentUser = query({
   args: {},
   handler: async (ctx) => {
     const identity = await requireIdentity(ctx)
-    return await ctx.db
+    const user = await ctx.db
       .query("users")
       .withIndex("by_clerk_id", (q) => q.eq("clerkId", identity.subject))
       .unique()
+
+    if (!user) return null
+
+    const avatarUrl = user.avatarStorageId
+      ? await ctx.storage.getUrl(user.avatarStorageId)
+      : null
+
+    return { ...user, avatarUrl }
   },
 })
 
