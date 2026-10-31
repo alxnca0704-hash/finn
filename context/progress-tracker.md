@@ -13,12 +13,13 @@ change.
 
 ## Completed
 
-- Spec 1: global dark-only theme tokens and Montserrat / Roboto Mono fonts in `app/globals.css` and `app/layout.tsx`.
+- Spec 1: global theme tokens and Montserrat / Roboto Mono fonts in `app/globals.css` and `app/layout.tsx`.
 - Initialized shadcn/ui (`radix` base, `nova` preset, lucide icons) and created `components.json` at the project root.
 - Pointed the shadcn `ui` alias to `components/client/ui` per the project folder convention.
 - Added `Button`, `Card`, `Input`, and `Field` to `components/client/ui/`, plus their `Label` and `Separator` dependencies.
 - Added `"use client"` to every file under `components/client/ui/` to match the client folder rule.
-- Restored the Finn dark-only tokens after `init`, and mapped shadcn semantic tokens (`background`, `foreground`, `card`, `popover`, `primary`, `secondary`, `muted`, `accent`, `destructive`, `border`, `input`, `ring`) onto the Finn palette.
+- Restored the Finn tokens after `init`, and mapped shadcn semantic tokens (`background`, `foreground`, `card`, `popover`, `primary`, `secondary`, `muted`, `accent`, `destructive`, `border`, `input`, `ring`) onto the Finn palette.
+- Reverted the palette to a light theme: white page background, light grey surfaces, near-black text and primary accent, light borders; updated `context/ui-context.md` to match.
 - Kept the `@theme inline` exports, added the shadcn imports (`tw-animate-css`, `shadcn/tailwind.css`), and aligned the radius scale with `ui-context.md`.
 - Removed the Geist font that `init` injected, keeping Montserrat as `--font-sans` and Roboto Mono as `--font-mono`.
 - Replaced the default Next.js starter content in `app/page.tsx` with a centered `Input` and `Button` to confirm the components render.
@@ -38,7 +39,7 @@ change.
 
 ## Architecture Decisions
 
-- Dark-only theme with no light mode, matching the monochrome finance design language in the UI context.
+- Light-only theme with no dark mode, matching the monochrome finance design language in the UI context.
 - `--background` and `--foreground` remain aliases of `--bg-base` and `--text-primary`; the shadcn semantic tokens are aliases too, so generated components inherit Finn colors without custom overrides.
 - Fonts are self-hosted through `next/font` and exposed as `--font-montserrat` / `--font-roboto-mono`, which the Tailwind theme maps to `font-sans` / `font-mono`.
 - shadcn `ui` components live in `components/client/ui/` and all carry `"use client"`, even when a specific component has no hooks.
