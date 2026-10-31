@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { useState } from "react"
 
 import { AuthCard } from "@/components/client/auth/auth-card"
@@ -23,11 +24,22 @@ import { Input } from "@/components/client/ui/input"
 import { ROUTES } from "@/constants/routes"
 
 export function SignUpCard() {
+  const router = useRouter()
   const [password, setPassword] = useState("")
   const [verifyPassword, setVerifyPassword] = useState("")
 
   const passwordsMatch =
     verifyPassword.length === 0 || password === verifyPassword
+
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    if (!passwordsMatch) {
+      return
+    }
+
+    router.push(ROUTES.onboarding)
+  }
 
   return (
     <AuthCard>
@@ -41,7 +53,7 @@ export function SignUpCard() {
       </CardHeader>
 
       <CardContent>
-        <form onSubmit={(event) => event.preventDefault()}>
+        <form onSubmit={handleSubmit}>
           <FieldGroup className="gap-4">
             <Field>
               <FieldLabel htmlFor="email">Email</FieldLabel>

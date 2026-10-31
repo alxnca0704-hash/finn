@@ -3,6 +3,7 @@
 import * as React from "react";
 import { format } from "date-fns";
 import { CalendarDaysIcon } from "lucide-react";
+import type { Matcher } from "react-day-picker";
 
 import { Button } from "@/components/client/ui/button";
 import { Calendar } from "@/components/client/ui/calendar";
@@ -14,15 +15,19 @@ import {
 import { cn } from "@/lib/utils";
 
 function DatePicker({
+  id,
   value,
   onChange,
   placeholder = "Pick a date",
   className,
+  disabled,
 }: {
+  id?: string;
   value?: Date;
   onChange?: (date: Date | undefined) => void;
   placeholder?: string;
   className?: string;
+  disabled?: Matcher | Matcher[];
 }) {
   const [open, setOpen] = React.useState(false);
   const [internalDate, setInternalDate] = React.useState<Date | undefined>();
@@ -40,6 +45,7 @@ function DatePicker({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
+          id={id}
           type="button"
           variant="outline"
           className={cn(
@@ -49,7 +55,9 @@ function DatePicker({
           )}
         >
           <CalendarDaysIcon />
-          {date ? format(date, "PPP") : placeholder}
+          <span className={date ? "font-mono" : undefined}>
+            {date ? format(date, "PPP") : placeholder}
+          </span>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
@@ -57,6 +65,7 @@ function DatePicker({
           mode="single"
           selected={date}
           captionLayout="dropdown"
+          disabled={disabled}
           onSelect={handleSelect}
         />
       </PopoverContent>
