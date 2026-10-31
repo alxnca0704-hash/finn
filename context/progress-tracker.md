@@ -5,11 +5,11 @@ change.
 
 ## Current Phase
 
-- Complete (Spec 2 — shadcn/ui setup and core components)
+- Complete (Spec 3 — sign-in card)
 
 ## Current Goal
 
-- shadcn/ui is initialized and Button, Card, Input, and Field are available.
+- The sign-in screen renders an email/password card with social buttons and a sign-up link.
 
 ## Completed
 
@@ -24,6 +24,13 @@ change.
 - Removed the Geist font that `init` injected, keeping Montserrat as `--font-sans` and Roboto Mono as `--font-mono`.
 - Replaced the default Next.js starter content in `app/page.tsx` with a centered `Input` and `Button` to confirm the components render.
 - Verified with `npm run lint`, `npx tsc --noEmit`, and `npm run build`.
+- Spec 3: added the `(auth)` route group layout with a centered column and the Finn wordmark.
+- Added the `/sign-in` page and the `SignInCard` client component with email and password fields, a submit button, Google/Apple/Facebook buttons, and the "Doesn't have an account? Sign up" link.
+- Added `constants/routes.ts` with the home, sign-in, and sign-up paths so routes are not hardcoded.
+- Social buttons use monochrome inline brand SVGs, since Lucide has no brand icons; all colors come from theme tokens.
+- Refined the sign-in card: white surface, `rounded-2xl` corners, a soft token-based shadow, larger bold title, and more generous card padding.
+- Added a show/hide password toggle inside the password input using Lucide `Eye` / `EyeOff` icons.
+- Verified with `npm run lint`, `npx tsc --noEmit`, and `npm run build`.
 
 ## In Progress
 
@@ -31,11 +38,11 @@ change.
 
 ## Next Up
 
-- Spec 3 (not defined yet).
+- Spec 4 (not defined yet).
 
 ## Open Questions
 
-- None.
+- Spec 3 mentions "a new page for sign up" but the card title, link text, and screen list describe a sign-in screen. Built the sign-in page at `/sign-in`; the sign-up link points to `/sign-up`, which does not exist yet and was out of scope.
 
 ## Architecture Decisions
 
