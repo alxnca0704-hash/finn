@@ -1,6 +1,7 @@
 "use client"
 
 import { Button } from "@/components/client/ui/button"
+import type { OAuthStrategy } from "@clerk/nextjs/types"
 
 function GoogleIcon() {
   return (
@@ -26,18 +27,24 @@ function FacebookIcon() {
   )
 }
 
-export function SocialAuthButtons() {
+export function SocialAuthButtons({
+  onProviderClick,
+  disabled = false,
+}: {
+  onProviderClick: (strategy: OAuthStrategy) => void
+  disabled?: boolean
+}) {
   return (
     <div className="flex flex-col gap-2">
-      <Button type="button" variant="outline" size="lg" className="w-full">
+      <Button type="button" variant="outline" size="lg" className="w-full" disabled={disabled} onClick={() => onProviderClick("oauth_google")}>
         <GoogleIcon />
         Continue with Google
       </Button>
-      <Button type="button" variant="outline" size="lg" className="w-full">
+      <Button type="button" variant="outline" size="lg" className="w-full" disabled={disabled} onClick={() => onProviderClick("oauth_apple")}>
         <AppleIcon />
         Continue with Apple
       </Button>
-      <Button type="button" variant="outline" size="lg" className="w-full">
+      <Button type="button" variant="outline" size="lg" className="w-full" disabled={disabled} onClick={() => onProviderClick("oauth_facebook")}>
         <FacebookIcon />
         Continue with Facebook
       </Button>

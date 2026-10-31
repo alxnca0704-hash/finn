@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { Suspense, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 
 import { AuthCard } from "@/components/client/auth/auth-card"
 import { Button } from "@/components/client/ui/button"
@@ -29,6 +29,12 @@ import {
 } from "@/constants/profile"
 import { ROUTES } from "@/constants/routes"
 import { isValidUsername } from "@/lib/validation"
+import {
+  useCurrentUser,
+  useOnboardingActions,
+  useUsernameAvailability,
+} from "@/hooks/use-current-user"
+import type { Id } from "@/convex/_generated/dataModel"
 
 export function OnboardingCard() {
   const router = useRouter()
@@ -37,6 +43,15 @@ export function OnboardingCard() {
   const [username, setUsername] = useState("")
   const [usernameTouched, setUsernameTouched] = useState(false)
   const [birthday, setBirthday] = useState<Date | undefined>()
+  const [profilePhoto, setProfilePhoto] = useState<File | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submissionError, setSubmissionError] = useState<string | null>(null)
+  const { user, isAuthenticated: isConvexAuthenticated, isLoading: isConvexAuthLoading } = useCurrentUser()
+  const { isAvailable, isChecking } = useUsernameAvailability(
+    username.trim(),
+    isValidUsername(username),
+  )
+  const { generateProfileUploadUrl, completeOnboarding } = useOnboardingActions()
 
   const usernameValid = isValidUsername(username)
   const requiredFields = [
@@ -46,17 +61,65 @@ export function OnboardingCard() {
     birthday !== undefined,
   ]
   const completedFields = requiredFields.filter(Boolean).length
-  const isComplete = completedFields === requiredFields.length
+  const isComplete =
+    completedFields === requiredFields.length && isAvailable === true
   const progress = Math.round((completedFields / requiredFields.length) * 100)
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  useEffect(() => {
+    if (user) router.replace(ROUTES.home)
+  }, [router, user])
+
+  if (!isConvexAuthLoading && !isConvexAuthenticated) {
+    return (
+      <AuthCard className="max-w-lg">
+        <CardHeader>
+          <CardTitle className="text-xl font-bold tracking-tight">
+            Profile setup is unavailable
+          </CardTitle>
+          <CardDescription>
+            Connect the Convex integration in Clerk, then refresh this page to continue.
+          </CardDescription>
+        </CardHeader>
+      </AuthCard>
+    )
+  }
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
-    if (!isComplete) {
-      return
-    }
+    if (!isComplete || !birthday) return
 
-    router.replace(ROUTES.home)
+    setIsSubmitting(true)
+    setSubmissionError(null)
+    try {
+      let avatarStorageId: Id<"_storage"> | undefined
+      if (profilePhoto) {
+        const uploadUrl = await generateProfileUploadUrl()
+        const uploadResponse = await fetch(uploadUrl, {
+          method: "POST",
+          headers: { "Content-Type": profilePhoto.type },
+          body: profilePhoto,
+        })
+        if (!uploadResponse.ok) throw new Error("Your profile photo could not be uploaded.")
+        const uploadResult = (await uploadResponse.json()) as { storageId: Id<"_storage"> }
+        avatarStorageId = uploadResult.storageId
+      }
+
+      await completeOnboarding({
+        firstName,
+        lastName,
+        username: username.trim(),
+        birthday: `${birthday.getFullYear()}-${String(birthday.getMonth() + 1).padStart(2, "0")}-${String(birthday.getDate()).padStart(2, "0")}`,
+        ...(avatarStorageId ? { avatarStorageId } : {}),
+      })
+      router.replace(ROUTES.home)
+    } catch (error) {
+      setSubmissionError(
+        error instanceof Error ? error.message : "We couldn't complete your profile setup.",
+      )
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -93,7 +156,7 @@ export function OnboardingCard() {
                   <div className="size-20 rounded-full bg-muted sm:size-24" />
                 }
               >
-                <ProfilePhotoUpload />
+                <ProfilePhotoUpload onFileSelected={setProfilePhoto} />
               </Suspense>
               <div className="flex flex-col gap-1">
                 <FieldTitle>Profile photo</FieldTitle>
@@ -131,7 +194,7 @@ export function OnboardingCard() {
               </Field>
             </div>
 
-            <Field data-invalid={usernameTouched && !usernameValid}>
+            <Field data-invalid={usernameTouched && (!usernameValid || isAvailable === false)}>
               <FieldLabel htmlFor="username">Username</FieldLabel>
               <div className="relative">
                 <span
@@ -149,7 +212,7 @@ export function OnboardingCard() {
                   value={username}
                   onChange={(event) => setUsername(event.target.value)}
                   onBlur={() => setUsernameTouched(true)}
-                  aria-invalid={usernameTouched && !usernameValid}
+                  aria-invalid={usernameTouched && (!usernameValid || isAvailable === false)}
                   aria-describedby="username-help"
                   required
                 />
@@ -159,10 +222,13 @@ export function OnboardingCard() {
                   Use {USERNAME_MIN_LENGTH} to {USERNAME_MAX_LENGTH} letters,
                   numbers, or underscores.
                 </FieldError>
+              ) : usernameTouched && isAvailable === false ? (
+                <FieldError id="username-help">That username is already taken.</FieldError>
               ) : (
                 <FieldDescription id="username-help">
-                  Use {USERNAME_MIN_LENGTH} to {USERNAME_MAX_LENGTH} letters,
-                  numbers, or underscores.
+                  {isChecking
+                    ? "Checking username availability…"
+                    : `Use ${USERNAME_MIN_LENGTH} to ${USERNAME_MAX_LENGTH} letters, numbers, or underscores.`}
                 </FieldDescription>
               )}
             </Field>
@@ -185,13 +251,18 @@ export function OnboardingCard() {
                   ? "All set. Complete setup to start saving."
                   : "Add your name, username, and birthday to continue."}
               </p>
+              {submissionError && (
+                <p role="alert" className="text-sm text-state-error">
+                  {submissionError}
+                </p>
+              )}
               <Button
                 type="submit"
                 size="lg"
                 className="h-10 w-full"
-                disabled={!isComplete}
+                disabled={!isComplete || isSubmitting}
               >
-                Complete setup
+                {isSubmitting ? "Saving profile…" : "Complete setup"}
               </Button>
             </div>
           </FieldGroup>

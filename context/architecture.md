@@ -13,12 +13,12 @@
 
 ## System Boundaries
 
-- `app/` — Routes and layouts: sign-in, onboarding, goals list, goal detail, profile and settings. Pages compose components and call Convex hooks. No business rules live here.
+- `app/` — Route groups: `(auth)` for sign-in, sign-up, and onboarding; `(app)` for the signed-in homepage and future authenticated screens. Pages compose components and call Convex hooks. No business rules live here.
 - `components/` — Reusable UI pieces: goal card, progress bar, deposit and withdraw sheet, transaction list, avatar. Styled with Tailwind and free of data fetching logic where possible.
 - `convex/` — The backend. Owns the schema, queries, and mutations for users, goals, and transactions, plus all validation and access checks.
 - `stores/` — Zustand stores for client-only UI state. Never holds data that belongs in Convex.
 - `lib/` — Shared helpers: currency formatting, date helpers, progress and "per week needed" calculations, validation schemas.
-- `middleware.ts` — Clerk route protection. Sends signed-out users to sign-in and users without a username to onboarding.
+- `proxy.ts` — Clerk session middleware for Next.js 16. The `(app)` server layout verifies the session and redirects signed-out users to sign-in; the signed-in home flow sends users without an onboarding profile to onboarding.
 
 ## Storage Model
 
@@ -28,6 +28,7 @@
   - `transactions`: goal, owner, type (deposit or withdraw), amount in integer minor units, optional note, created time.
 - **Convex file storage**: profile pictures uploaded during onboarding or from settings. The `users` record stores only the file reference.
 - **Clerk**: email and sign-in identity. Finn does not store passwords or tokens.
+- **Clerk and Convex auth**: the Next.js root layout provides Clerk; `ConvexProviderWithClerk` passes the active Clerk token to Convex. Clerk must provide either its Convex integration token or a JWT template named `convex`. Convex validates the token with the Clerk issuer configured in `convex/auth.config.ts`.
 - **Zustand (browser memory)**: temporary UI state only. Lost on refresh by design.
 
 ## Auth and Access Model

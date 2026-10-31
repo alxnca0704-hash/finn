@@ -60,7 +60,11 @@ function AntUpload({ className }: { className?: string }) {
   );
 }
 
-function ProfilePhotoUpload() {
+function ProfilePhotoUpload({
+  onFileSelected,
+}: {
+  onFileSelected?: (file: File) => void
+}) {
   const [messageApi, contextHolder] = message.useMessage();
   const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
   const previewUrlRef = React.useRef<string | null>(null);
@@ -88,6 +92,8 @@ function ProfilePhotoUpload() {
         );
         return Upload.LIST_IGNORE;
       }
+
+      onFileSelected?.(file)
 
       const nextUrl = URL.createObjectURL(file);
 

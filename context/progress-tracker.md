@@ -5,11 +5,11 @@ change.
 
 ## Current Phase
 
-- Complete (Spec 5 — shadcn Progress, date picker, and Ant Design upload)
+- In progress (Spec 7 — Clerk authentication and Convex-backed onboarding)
 
 ## Current Goal
 
-- The three new UI pieces are installed and render together on the home page: a green `Progress` bar, a `DatePicker` (Popover + Calendar), and an Ant Design `Upload` trigger.
+- Wire the existing Finn sign-in and sign-up UI to Clerk, then persist onboarding in Convex without changing the established interface.
 
 ## Completed
 
@@ -41,14 +41,26 @@ change.
 - Installed `antd` and `@ant-design/icons` and added `AntUpload` at `components/client/upload/ant-upload.tsx`, themed through `ConfigProvider` with Finn tokens and a shadcn `Button` trigger.
 - Replaced the home-page placeholder with a small preview that renders all three components; `AntUpload` sits inside `<Suspense>` because antd reads `Date.now()` at module scope during prerender.
 - Verified with `npm run lint`, `npx tsc --noEmit`, `npm run build`, and a dev-server request that returned 200 with the new components rendered.
+- Spec 7 implementation: added the Clerk Next.js SDK and root provider, Next.js 16 `proxy.ts` session middleware, a signed-in `(app)` route group with the homepage at `/`, and an SSO callback route.
+- Connected the existing email/password sign-in and sign-up forms to Clerk custom flows, including email verification, optional email-code MFA, provider OAuth buttons (Google, Apple, Facebook), and visible errors. The Finn components and visual layout remain in use.
+- Added Clerk-to-Convex token provisioning, Convex auth configuration, a user profile schema and authenticated queries/mutations for username availability and onboarding completion.
+- Onboarding now saves first name, last name, username, and birthday to Convex; optional profile photos upload to Convex Storage in accordance with the architecture rules.
+- `npm run lint`, `npx tsc --noEmit`, and `npm run build` pass. Lint reports four warnings in generated Convex files and no errors.
+- The user supplied the selected Clerk application's development keys in `.env.local` (the file was not opened). `/sign-in` and `/sign-up` now return 200 locally, and signed-out `/onboarding` requests redirect to sign-in.
+- The Clerk Frontend API URL supplied by the user is set as `CLERK_JWT_ISSUER_DOMAIN` on the existing `flippant-sardine-77` Convex development deployment. `npx convex dev` synced the schema and functions and reported them ready.
+- `npx convex run users:getCurrentUser "{}"` found the deployed function and returned the expected signed-out authorization error.
+- Moved the existing home page into `app/(app)/page.tsx`; the URL remains `/`, and signed-in users land there after Clerk redirects.
+- A signed-in browser request reached Convex but had no verified Convex identity. Updated the current-user hooks to skip queries until Convex authentication succeeds and show an onboarding setup message instead of a runtime error.
+- The selected Clerk app still needs its Convex integration enabled or a JWT template named `convex`; after that, verify onboarding from a signed-in browser session.
 
 ## In Progress
 
-- None.
+- Enable the selected Clerk app's Convex integration or create its `convex` JWT template. Confirm email/password and Google, Apple, and Facebook sign-in are enabled.
+- Confirm `NEXT_PUBLIC_CONVEX_URL` is set for the app and verify onboarding with a signed-in development account.
 
 ## Next Up
 
-- Spec 6 (not defined yet).
+- Verify email/password, OAuth, and onboarding with a signed-in development account.
 
 ## Open Questions
 
@@ -58,6 +70,7 @@ change.
 - Ant Design is a deliberate exception to the shadcn-only rule, requested by Spec 5. The `Upload` has no endpoint, so it keeps files in local component state (`beforeUpload` returns `false`) and never posts anywhere; wiring it to Convex file storage is still open.
 - The `DatePicker` is a local composition of `Calendar` + `Popover`, since shadcn has no standalone date-picker registry item. It is uncontrolled by default and optionally controlled via `value` / `onChange`.
 - `AntUpload` reads `Date.now()` at module scope inside antd, which Next 16 flags during prerender. The home-page preview wraps it in `<Suspense>`. Any future usage needs the same boundary (or a client-only dynamic import).
+- The Clerk issuer domain and provider enablement are account configuration; environment files were not inspected.
 
 ## Architecture Decisions
 

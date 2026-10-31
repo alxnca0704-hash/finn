@@ -13,8 +13,10 @@ Act as a developer and Read the 'AGENTS.MD' strictly and update the 'progress-tr
 
 
 
+
 # Requirements 
 - complete sign up , sign in and onboarding set up
+- keep the current ui without touching the interface
 
 
 # Clerk set up instruction
