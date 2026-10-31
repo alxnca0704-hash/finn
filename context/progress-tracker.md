@@ -5,11 +5,11 @@ change.
 
 ## Current Phase
 
-- In progress (Spec 8 — Goal creation and listing)
+- Spec 9 complete (goal detail, deposits, withdrawals, and transaction history)
 
 ## Current Goal
 
-- Let signed-in users create goals with an optional target amount and date, then show them in a responsive home grid. Editing and deleting goals remain out of scope.
+- Let signed-in users open a goal, see its balance and progress, add or withdraw money, and review a permanent transaction history. Editing, deleting, and undoing transactions remain out of scope.
 
 ## Completed
 
@@ -68,6 +68,15 @@ change.
 - Made the goals grid two columns on mobile with tighter gaps, and scaled the cards down on small screens: shorter minimum height, smaller padding, responsive balance/caption type, and a condensed add-goal tile. Re-verified with `npx tsc --noEmit`, `npm run lint`, and `npm run build`.
 - Moved goal progress into a compact Ant Design circle ring in the card's top-right, with the deadline under the goal name and the balance anchored at the bottom; open-ended goals show a neutral label instead of a ring. Re-verified with `npx tsc --noEmit`, `npm run lint`, and `npm run build`.
 - Changed goal ordering to oldest first so newly created goals appear at the end of the grid, immediately before the add-goal tile.
+- Spec 9: added `getGoal` plus `listTransactions` and `recordTransaction` in `convex/`, with ownership checks, insert-only transaction history, integer minor units, amount validation, and the withdrawal-not-above-balance rule enforced in the mutation.
+- Added `useGoal`, `useTransactions`, `useTransactionActions`, and `useMediaQuery`; transaction rows carry a derived `balanceAfter` from a chronological running balance.
+- Added `app/(app)/goals/[id]/page.tsx` and a passbook-style `GoalDetail`: goal name, 44px mono balance, target progress rail, deposit and withdraw actions, and newest-first history with notes, dates, times, and running balances.
+- Added a deposit/withdraw entry form that uses a shadcn Sheet on mobile and a centered Dialog on desktop, with inline validation and clear server errors.
+- Added shadcn `Dialog`, `Sheet`, and `Skeleton`; goal cards now link to their detail page with a visible keyboard focus ring.
+- Added skeleton loading states for the home goal grid and the goal detail page, replacing the previous loading text.
+- Added shadcn's Base UI Toast at `components/client/ui/toast.tsx`, mounted `<Toaster />` in the root layout, and installed `@base-ui/react` (the `radix-nova` style has no toast item).
+- Deposits and withdrawals now close the entry sheet/modal and show a success toast with the amount and the new balance. No Undo action is offered, since transactions are insert-only.
+- Verified with `npx convex codegen` (functions synced), `npx tsc --noEmit`, `npm run lint` (four generated-file warnings, no errors), and `npm run build`.
 
 ## In Progress
 
@@ -75,8 +84,8 @@ change.
 
 ## Next Up
 
-- Verify email/password, OAuth, onboarding, and goal creation with a signed-in development account.
-- Spec 9: deposits, withdrawals, and per-goal transaction history.
+- Verify email/password, OAuth, onboarding, goal creation, deposits, and withdrawals with a signed-in development account.
+- Confirm the withdraw rejection path in the UI by attempting to withdraw more than the current balance.
 
 ## Open Questions
 
@@ -90,7 +99,11 @@ change.
 - Spec 8 asks for Ant Design's Modal and Progress, which conflicts with the shadcn-only rule in `ui-context.md`. The user confirmed Ant Design should be used as specced; the exception is now documented there and all Ant Design usage shares `FinnAntProvider`.
 - The spec's modal only mentions target amount and date, while the project overview makes the goal name required. The user confirmed a name field should be included.
 - New goals have no transactions yet, so their card balance and progress start at 0. The `transactions` table was added ahead of Spec 9 solely so `listGoals` can derive balances instead of storing one.
-- The home grid always ends with the "Add goal" tile, including when no goals exist yet.
+- The home grid always ends with the "Add goal" tile, including when no goals exist yet. During loading, three skeleton cards appear before it.
+- Spec 9 mentions an "expense name" in transaction details. Interpreted as the optional note/description field, since deposits and withdrawals are not expenses and the data model already stores `note`.
+- Transaction history shows the running balance after each entry, which the project overview lists as a "nice addition" rather than a hard requirement.
+- Withdraw is disabled when the balance is zero. The server also rejects overdrafts, so hiding the button is never the only protection.
+- The supplied toast example shows an Undo action. Transaction toasts omit it because transactions are insert-only; a correction is a new opposite entry.
 
 ## Architecture Decisions
 
@@ -103,6 +116,11 @@ change.
 - Goals store `targetAmount` in integer minor units and `targetDate` as a `YYYY-MM-DD` string; both are optional and omitted when empty.
 - `listGoals` computes each goal's balance by summing its transactions (deposit adds, withdraw subtracts). No balance field is stored on the goal.
 - Goal ownership uses the verified Clerk subject stored as `clerkId`, matching the existing `users` table; client-sent user ids are never trusted.
+- `recordTransaction` is the only transaction mutation; transactions stay insert-only and corrections are new opposite entries.
+- Goal ids from the URL are passed to Convex as strings and normalized with `ctx.db.normalizeId`. Invalid ids and goals owned by someone else return null or an empty list, or a not-found error on writes, without exposing data.
+- The goal detail entry form uses a shadcn Sheet on mobile and a centered Dialog on desktop, chosen with `useMediaQuery`, so both share one form and validation path.
+- Loading states use the shadcn `Skeleton` with reduced-motion support; the home grid shows three placeholder cards and keeps the add-goal tile available.
+- Toasts use shadcn's Base UI Toast because `radix-nova` does not ship a toast item. The manager lives in `components/client/ui/toast.tsx` and `<Toaster />` is mounted once at the root. Transaction toasts confirm success and show the new balance; they never offer Undo.
 
 ## Session Notes
 

@@ -4,4 +4,5 @@ export const ROUTES = {
   signUp: "/sign-up",
   ssoCallback: "/sso-callback",
   onboarding: "/onboarding",
+  goalDetail: (goalId: string) => `/goals/${goalId}`,
 } as const

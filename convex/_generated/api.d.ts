@@ -10,6 +10,7 @@
 
 import type * as auth from "../auth.js";
 import type * as goals from "../goals.js";
+import type * as transactions from "../transactions.js";
 import type * as users from "../users.js";
 
 import type {
@@ -21,6 +22,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   goals: typeof goals;
+  transactions: typeof transactions;
   users: typeof users;
 }>;
 

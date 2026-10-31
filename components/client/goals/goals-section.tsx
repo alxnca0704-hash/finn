@@ -3,6 +3,7 @@
 import { FinnAntProvider } from "@/components/client/antd/finn-provider"
 import { AddGoalCard } from "@/components/client/goals/add-goal-card"
 import { GoalCard } from "@/components/client/goals/goal-card"
+import { GoalCardSkeleton } from "@/components/client/goals/goal-card-skeleton"
 import { useGoals } from "@/hooks/use-goals"
 
 export function GoalsSection() {
@@ -22,11 +23,16 @@ export function GoalsSection() {
           )}
         </div>
         <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
-          {goals?.map((goal) => <GoalCard key={goal._id} goal={goal} />)}
+          {isLoading &&
+            [0, 1, 2].map((card) => <GoalCardSkeleton key={card} />)}
+          {!isLoading &&
+            goals?.map((goal) => <GoalCard key={goal._id} goal={goal} />)}
           <AddGoalCard />
         </div>
         {isLoading && (
-          <p className="text-sm text-text-muted">Loading goals…</p>
+          <p role="status" className="sr-only">
+            Loading goals
+          </p>
         )}
         {!isLoading && isAuthenticated && goals?.length === 0 && (
           <p className="text-sm text-text-muted">

@@ -2,6 +2,7 @@ import { v } from "convex/values"
 
 import { mutation, query } from "./_generated/server"
 import { requireIdentity } from "./auth"
+import { listGoalTransactions, sumBalance } from "./transactions"
 
 const GOAL_NAME_MAX_LENGTH = 60
 
@@ -46,21 +47,27 @@ export const listGoals = query({
 
     const goalsWithBalance = await Promise.all(
       goals.map(async (goal) => {
-        const transactions = await ctx.db
-          .query("transactions")
-          .withIndex("by_goal_id", (q) => q.eq("goalId", goal._id))
-          .collect()
-        const balance = transactions.reduce(
-          (total, transaction) =>
-            total +
-            (transaction.type === "deposit" ? transaction.amount : -transaction.amount),
-          0,
-        )
-        return { ...goal, balance }
+        const transactions = await listGoalTransactions(ctx, goal._id)
+        return { ...goal, balance: sumBalance(transactions) }
       }),
     )
 
     return goalsWithBalance.sort((a, b) => a.createdAt - b.createdAt)
+  },
+})
+
+export const getGoal = query({
+  args: { goalId: v.string() },
+  handler: async (ctx, args) => {
+    const identity = await requireIdentity(ctx)
+    const normalizedId = ctx.db.normalizeId("goals", args.goalId)
+    if (!normalizedId) return null
+
+    const goal = await ctx.db.get(normalizedId)
+    if (!goal || goal.clerkId !== identity.subject) return null
+
+    const transactions = await listGoalTransactions(ctx, goal._id)
+    return { ...goal, balance: sumBalance(transactions) }
   },
 })
 

@@ -1,5 +1,6 @@
 import { ClerkProvider } from "@clerk/nextjs";
 import { ConvexClientProvider } from "@/components/client/convex-client-provider";
+import { Toaster } from "@/components/client/ui/toast";
 import type { Metadata } from "next";
 import { Montserrat, Roboto_Mono } from "next/font/google";
 import "./globals.css";
@@ -29,6 +30,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <ClerkProvider>
           <ConvexClientProvider>{children}</ConvexClientProvider>
         </ClerkProvider>
+        <Toaster />
       </body>
     </html>
   );

@@ -21,6 +21,20 @@ export function useGoals() {
   }
 }
 
+export function useGoal(goalId: string) {
+  const { isAuthenticated, isLoading: isAuthLoading } = useConvexAuth()
+  const goal = useQuery(
+    api.goals.getGoal,
+    isAuthenticated ? { goalId } : "skip",
+  ) as GoalWithBalance | null | undefined
+
+  return {
+    goal,
+    isAuthenticated,
+    isLoading: isAuthLoading || (isAuthenticated && goal === undefined),
+  }
+}
+
 export function useGoalActions() {
   const createGoal = useMutation(api.goals.createGoal)
 

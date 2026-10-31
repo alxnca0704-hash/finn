@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@ant-design/icons": "^6.3.4",
+    "@base-ui/react": "^1.9.0",
     "@clerk/nextjs": "^7.9.23",
     "antd": "^6.6.8",
     "class-variance-authority": "^0.7.1",

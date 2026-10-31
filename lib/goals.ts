@@ -26,3 +26,12 @@ export function getDaysUntil(targetDate: string) {
     (target.getTime() - startOfToday.getTime()) / (24 * 60 * 60 * 1000),
   )
 }
+
+export function describeDeadline(targetDate: string) {
+  const daysLeft = getDaysUntil(targetDate)
+
+  if (daysLeft < 0) return "Target date passed"
+  if (daysLeft === 0) return "Due today"
+
+  return `${daysLeft} day${daysLeft === 1 ? "" : "s"} left`
+}
