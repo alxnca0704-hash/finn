@@ -5,11 +5,11 @@ change.
 
 ## Current Phase
 
-- Complete (Spec 4 — sign-up card)
+- Complete (Spec 5 — shadcn Progress, date picker, and Ant Design upload)
 
 ## Current Goal
 
-- The sign-up screen renders an email/password card with social buttons and a sign-in link, reusing the sign-in card shell.
+- The three new UI pieces are installed and render together on the home page: a green `Progress` bar, a `DatePicker` (Popover + Calendar), and an Ant Design `Upload` trigger.
 
 ## Completed
 
@@ -36,6 +36,11 @@ change.
 - Sign-up has no Google/SSO buttons; the submit button stays disabled and a red `FieldError` appears when the two passwords differ.
 - The sign-in card's "Sign up" link now reaches the new `/sign-up` page; both links use `ROUTES` from `constants/routes.ts`.
 - Verified with `npm run lint`, `npx tsc --noEmit`, and `npm run build`.
+- Spec 5: added `Progress` and restyled its indicator to `bg-state-progress` so progress stays green per the UI context.
+- Added `Popover` and `Calendar` (with `date-fns` and `react-day-picker`) plus a `DatePicker` composition at `components/client/ui/date-picker.tsx`.
+- Installed `antd` and `@ant-design/icons` and added `AntUpload` at `components/client/upload/ant-upload.tsx`, themed through `ConfigProvider` with Finn tokens and a shadcn `Button` trigger.
+- Replaced the home-page placeholder with a small preview that renders all three components; `AntUpload` sits inside `<Suspense>` because antd reads `Date.now()` at module scope during prerender.
+- Verified with `npm run lint`, `npx tsc --noEmit`, `npm run build`, and a dev-server request that returned 200 with the new components rendered.
 
 ## In Progress
 
@@ -43,13 +48,16 @@ change.
 
 ## Next Up
 
-- Spec 5 (not defined yet).
+- Spec 6 (not defined yet).
 
 ## Open Questions
 
 - Spec 3 mentions "a new page for sign up" but the card title, link text, and screen list describe a sign-in screen. Built the sign-in page at `/sign-in`; the sign-up link points to `/sign-up`, which does not exist yet and was out of scope.
 - Spec 4 says the sign-up "Sign in" link has "no routes for now". Assumed this refers to auth/API wiring rather than navigation, so the link points to the existing `/sign-in` page. Confirm if it should be inert instead.
 - Verify password validates only that both fields match; there are no strength rules yet. Social buttons were removed from sign-up but remain on sign-in, since sign-in SSO is part of the product overview.
+- Ant Design is a deliberate exception to the shadcn-only rule, requested by Spec 5. The `Upload` has no endpoint, so it keeps files in local component state (`beforeUpload` returns `false`) and never posts anywhere; wiring it to Convex file storage is still open.
+- The `DatePicker` is a local composition of `Calendar` + `Popover`, since shadcn has no standalone date-picker registry item. It is uncontrolled by default and optionally controlled via `value` / `onChange`.
+- `AntUpload` reads `Date.now()` at module scope inside antd, which Next 16 flags during prerender. The home-page preview wraps it in `<Suspense>`. Any future usage needs the same boundary (or a client-only dynamic import).
 
 ## Architecture Decisions
 
@@ -58,6 +66,7 @@ change.
 - Fonts are self-hosted through `next/font` and exposed as `--font-montserrat` / `--font-roboto-mono`, which the Tailwind theme maps to `font-sans` / `font-mono`.
 - shadcn `ui` components live in `components/client/ui/` and all carry `"use client"`, even when a specific component has no hooks.
 - Generated components import `cn` from the `cn` package; `lib/utils.ts` re-exports it as the shared utility entry point.
+- Ant Design is limited to `Upload`; it is wrapped in a client component with a `ConfigProvider` theme built from `var(--token)` values so it matches the monochrome palette, and it is documented as an exception in `ui-context.md`.
 
 ## Session Notes
 

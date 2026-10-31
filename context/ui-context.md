@@ -59,6 +59,8 @@ shadcn/ui on top of Tailwind is used for all reusable components. Before buildin
 
 Components Finn is expected to use from shadcn: Button, Input, Label, Form, Card, Dialog, Sheet (for the mobile deposit and withdraw sheet), AlertDialog (for delete confirmations), Avatar, Progress, Popover and Calendar (for the target date), Badge, Skeleton, Sonner (toasts for success and error), and Dropdown Menu.
 
+**Exception:** file uploads use Ant Design's `Upload` through `components/client/upload/ant-upload.tsx`, themed with `ConfigProvider` so its colors and fonts still come from the Finn tokens. All other reusable UI stays shadcn/ui.
+
 Feature components such as `GoalCard` or `TransactionRow` are built by composing these shadcn pieces, not by styling raw HTML elements. Clerk's sign-in and sign-up components are themed through the `appearance` prop so they match the same tokens, with a white background, near-black text, and a near-black primary button.
 
 ## Layout Patterns
