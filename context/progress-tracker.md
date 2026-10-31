@@ -5,11 +5,11 @@ change.
 
 ## Current Phase
 
-- In progress (Spec 7 — Clerk authentication and Convex-backed onboarding)
+- In progress (Spec 8 — Goal creation and listing)
 
 ## Current Goal
 
-- Wire the existing Finn sign-in and sign-up UI to Clerk, then persist onboarding in Convex without changing the established interface.
+- Let signed-in users create goals with an optional target amount and date, then show them in a responsive home grid. Editing and deleting goals remain out of scope.
 
 ## Completed
 
@@ -53,15 +53,30 @@ change.
 - The signed-in home page displays the saved username and profile photo from Convex Storage, with initials when no photo was uploaded. Added a Clerk sign-out button beside the profile.
 - A signed-in browser request reached Convex but had no verified Convex identity. Updated the current-user hooks to skip queries until Convex authentication succeeds and show an onboarding setup message instead of a runtime error.
 - The selected Clerk app still needs its Convex integration enabled or a JWT template named `convex`; after that, verify onboarding from a signed-in browser session.
+- Spec 8: added the `goals` table and the `transactions` table (no transaction mutations yet) to `convex/schema.ts`.
+- Added `convex/auth.ts` with the shared `requireIdentity` helper and reused it in `convex/users.ts`.
+- Added `convex/goals.ts` with `listGoals` (derives each goal's balance from its transactions) and `createGoal` (validates name, optional target amount in minor units, optional target date, and onboarding).
+- Added `hooks/use-goals.ts` exposing `useGoals` and `useGoalActions`.
+- Added the shared Ant Design `FinnAntProvider`, extracted the theme from the upload component, and updated `AntUpload` to use it.
+- Added `components/client/goals/`: `GoalsSection` (grid + loading/empty states), `GoalCard` (balance, deadline, Ant Design circle progress), `AddGoalCard` (dashed "Add goal" tile), and `AddGoalModal` (name, target amount, target date).
+- Added `constants/goals.ts`, `lib/money.ts` (minor-unit conversion and currency formatting), and `lib/goals.ts` (progress percent, reached check, date formatting, days left).
+- Replaced the home-page component preview with the goals grid, keeping the profile header and post-auth redirect.
+- Verified with `npx convex codegen`, `npx tsc --noEmit`, `npm run lint` (four generated-file warnings, no errors), and `npm run build`.
+- Redesigned the add-goal modal with a custom header, prominent name field, two-column target amount/date row, optional-field labels, and shadcn footer buttons; `FinnAntProvider` now sets a 44px large control height and the modal radius. Re-verified with `npx tsc --noEmit`, `npm run lint`, and `npm run build`.
+- Set the app currency to Philippine peso (PHP): added `constants/money.ts` (`PHP`, `en-PH`, `₱`), updated `lib/money.ts` formatting, and switched the target amount prefix to `₱`.
+- Redesigned the goal card as a passbook-style ledger: name and reached badge, 28px mono balance, one data row, and an antd progress rail flush to the card's bottom edge. Removed the circular gauge, card shadows, middle-dot metadata, and all-caps labels from the add-goal modal and add-goal tile. Re-verified with `npx tsc --noEmit`, `npm run lint`, and `npm run build`.
+- Made the goals grid two columns on mobile with tighter gaps, and scaled the cards down on small screens: shorter minimum height, smaller padding, responsive balance/caption type, and a condensed add-goal tile. Re-verified with `npx tsc --noEmit`, `npm run lint`, and `npm run build`.
+- Moved goal progress into a compact Ant Design circle ring in the card's top-right, with the deadline under the goal name and the balance anchored at the bottom; open-ended goals show a neutral label instead of a ring. Re-verified with `npx tsc --noEmit`, `npm run lint`, and `npm run build`.
+- Changed goal ordering to oldest first so newly created goals appear at the end of the grid, immediately before the add-goal tile.
 
 ## In Progress
 
-- Enable the selected Clerk app's Convex integration or create its `convex` JWT template. Confirm email/password and Google, Apple, and Facebook sign-in are enabled.
-- Confirm `NEXT_PUBLIC_CONVEX_URL` is set for the app and verify onboarding with a signed-in development account.
+- None.
 
 ## Next Up
 
-- Verify email/password, OAuth, and onboarding with a signed-in development account.
+- Verify email/password, OAuth, onboarding, and goal creation with a signed-in development account.
+- Spec 9: deposits, withdrawals, and per-goal transaction history.
 
 ## Open Questions
 
@@ -72,6 +87,10 @@ change.
 - The `DatePicker` is a local composition of `Calendar` + `Popover`, since shadcn has no standalone date-picker registry item. It is uncontrolled by default and optionally controlled via `value` / `onChange`.
 - `AntUpload` reads `Date.now()` at module scope inside antd, which Next 16 flags during prerender. The home-page preview wraps it in `<Suspense>`. Any future usage needs the same boundary (or a client-only dynamic import).
 - The Clerk issuer domain and provider enablement are account configuration; environment files were not inspected.
+- Spec 8 asks for Ant Design's Modal and Progress, which conflicts with the shadcn-only rule in `ui-context.md`. The user confirmed Ant Design should be used as specced; the exception is now documented there and all Ant Design usage shares `FinnAntProvider`.
+- The spec's modal only mentions target amount and date, while the project overview makes the goal name required. The user confirmed a name field should be included.
+- New goals have no transactions yet, so their card balance and progress start at 0. The `transactions` table was added ahead of Spec 9 solely so `listGoals` can derive balances instead of storing one.
+- The home grid always ends with the "Add goal" tile, including when no goals exist yet.
 
 ## Architecture Decisions
 
@@ -80,7 +99,10 @@ change.
 - Fonts are self-hosted through `next/font` and exposed as `--font-montserrat` / `--font-roboto-mono`, which the Tailwind theme maps to `font-sans` / `font-mono`.
 - shadcn `ui` components live in `components/client/ui/` and all carry `"use client"`, even when a specific component has no hooks.
 - Generated components import `cn` from the `cn` package; `lib/utils.ts` re-exports it as the shared utility entry point.
-- Ant Design is limited to `Upload`; it is wrapped in a client component with a `ConfigProvider` theme built from `var(--token)` values so it matches the monochrome palette, and it is documented as an exception in `ui-context.md`.
+- Ant Design usage is limited to the spec-mandated pieces (upload, goal modal and date field, goal progress circles); everything shares `FinnAntProvider`, a `ConfigProvider` theme built from `var(--token)` values, and the exception is documented in `ui-context.md`.
+- Goals store `targetAmount` in integer minor units and `targetDate` as a `YYYY-MM-DD` string; both are optional and omitted when empty.
+- `listGoals` computes each goal's balance by summing its transactions (deposit adds, withdraw subtracts). No balance field is stored on the goal.
+- Goal ownership uses the verified Clerk subject stored as `clerkId`, matching the existing `users` table; client-sent user ids are never trusted.
 
 ## Session Notes
 

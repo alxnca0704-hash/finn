@@ -177,7 +177,7 @@ These are the decisions that will shape the product most. Try answering them one
 2. **What happens when a goal is deleted?** Delete its transactions too, or archive them? Because transactions are "not editable," deleting a goal may conflict with that principle.
 3. **Can a goal be edited after it's reached?** And should reaching the goal trigger a celebration or an "archive" prompt?
 4. **Transfers between goals:** is moving money from one goal to another a feature, or is it just a withdraw plus a deposit?
-5. **Currency:** one fixed currency, or user-selectable?
+5. **Currency:** one fixed currency, or user-selectable? **Decided:** one fixed currency, Philippine peso (PHP).
 6. **Platform first:** mobile app, web app, or both?
 7. **Name and look:** what feeling should "Finn" have (playful, minimal, serious)?
 8. **Monetization (if any):** free, premium features, or none?

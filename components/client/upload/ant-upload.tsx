@@ -3,29 +3,13 @@
 import * as React from "react";
 import { UploadOutlined } from "@ant-design/icons";
 import type { UploadFile, UploadProps } from "antd";
-import { ConfigProvider, message, Upload } from "antd";
+import { message, Upload } from "antd";
 import { Camera } from "lucide-react";
 
+import { FinnAntProvider } from "@/components/client/antd/finn-provider";
 import { Button } from "@/components/client/ui/button";
 import { MAX_PROFILE_PHOTO_BYTES } from "@/constants/profile";
 import { cn } from "@/lib/utils";
-
-const finnTheme = {
-  token: {
-    colorPrimary: "var(--accent-primary)",
-    colorText: "var(--text-primary)",
-    colorTextSecondary: "var(--text-muted)",
-    colorBorder: "var(--border-default)",
-    colorBgContainer: "var(--bg-surface)",
-    colorError: "var(--state-error)",
-    colorSuccess: "var(--state-success)",
-    fontFamily: "var(--font-sans)",
-  },
-};
-
-function UploadTheme({ children }: { children: React.ReactNode }) {
-  return <ConfigProvider theme={finnTheme}>{children}</ConfigProvider>;
-}
 
 function AntUpload({ className }: { className?: string }) {
   const [messageApi, contextHolder] = message.useMessage();
@@ -48,7 +32,7 @@ function AntUpload({ className }: { className?: string }) {
   };
 
   return (
-    <UploadTheme>
+    <FinnAntProvider>
       {contextHolder}
       <Upload {...props} className={className}>
         <Button type="button" variant="outline">
@@ -56,7 +40,7 @@ function AntUpload({ className }: { className?: string }) {
           Click to Upload
         </Button>
       </Upload>
-    </UploadTheme>
+    </FinnAntProvider>
   );
 }
 
@@ -109,7 +93,7 @@ function ProfilePhotoUpload({
   };
 
   return (
-    <UploadTheme>
+    <FinnAntProvider>
       {contextHolder}
       <Upload {...props}>
         <Button
@@ -127,7 +111,7 @@ function ProfilePhotoUpload({
           {!previewUrl && <Camera className="size-5 text-muted-foreground" />}
         </Button>
       </Upload>
-    </UploadTheme>
+    </FinnAntProvider>
   );
 }
 
