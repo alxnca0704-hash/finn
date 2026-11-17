@@ -45,13 +45,13 @@ Each goal has:
 
 - **Add:** create a goal with just a name, or add target amount and date
 - **Edit:** change name, target amount, target date (balance is not editable)
-- **Delete:** remove a goal, with a confirmation step (see open questions for what happens to its history)
+- **Delete:** remove a goal and its transaction history with a confirmation step. Finn is a tracker and does not move real money.
 
 ### 3.3 Deposits and withdrawals
 
 - Inside a goal, the user can **deposit** or **withdraw** an amount
 - Every deposit or withdrawal creates a **transaction**
-- **Transactions cannot be edited or deleted.** This keeps the history trustworthy, like a bank statement
+- **Individual transactions cannot be edited or deleted.** Corrections are new transactions; deleting a goal deletes that goal’s transaction history with it.
 - The goal's balance is always the sum of its transactions
 
 ### 3.4 Transaction history
@@ -174,7 +174,7 @@ Balance = sum of deposits minus sum of withdrawals for a goal.
 These are the decisions that will shape the product most. Try answering them one by one:
 
 1. **Real money or tracker only?** Does Finn just record numbers, or will it ever connect to real accounts?
-2. **What happens when a goal is deleted?** Delete its transactions too, or archive them? Because transactions are "not editable," deleting a goal may conflict with that principle.
+2. **What happens when a goal is deleted?** Decided: delete its transaction history with the goal. Finn is a tracker and does not move real money.
 3. **Can a goal be edited after it's reached?** And should reaching the goal trigger a celebration or an "archive" prompt?
 4. **Transfers between goals:** is moving money from one goal to another a feature, or is it just a withdraw plus a deposit?
 5. **Currency:** one fixed currency, or user-selectable? **Decided:** one fixed currency, Philippine peso (PHP).

@@ -100,3 +100,46 @@ export const createGoal = mutation({
     })
   },
 })
+
+export const updateGoal = mutation({
+  args: {
+    goalId: v.string(),
+    name: v.string(),
+    targetAmount: v.optional(v.number()),
+    targetDate: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const identity = await requireIdentity(ctx)
+    const goalId = ctx.db.normalizeId("goals", args.goalId)
+    const goal = goalId ? await ctx.db.get(goalId) : null
+    if (!goal || goal.clerkId !== identity.subject) {
+      throw new Error("We couldn't find that goal.")
+    }
+
+    const name = normalizeName(args.name)
+    const targetAmount = normalizeTargetAmount(args.targetAmount)
+    const targetDate = normalizeTargetDate(args.targetDate)
+    await ctx.db.patch(goal._id, {
+      name,
+      ...(targetAmount !== undefined ? { targetAmount } : { targetAmount: undefined }),
+      ...(targetDate !== undefined ? { targetDate } : { targetDate: undefined }),
+      updatedAt: Date.now(),
+    })
+  },
+})
+
+export const deleteGoal = mutation({
+  args: { goalId: v.string() },
+  handler: async (ctx, args) => {
+    const identity = await requireIdentity(ctx)
+    const goalId = ctx.db.normalizeId("goals", args.goalId)
+    const goal = goalId ? await ctx.db.get(goalId) : null
+    if (!goal || goal.clerkId !== identity.subject) {
+      throw new Error("We couldn't find that goal.")
+    }
+
+    const transactions = await listGoalTransactions(ctx, goal._id)
+    await Promise.all(transactions.map((transaction) => ctx.db.delete(transaction._id)))
+    await ctx.db.delete(goal._id)
+  },
+})

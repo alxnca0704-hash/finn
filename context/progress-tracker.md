@@ -5,11 +5,11 @@ change.
 
 ## Current Phase
 
-- Spec 9 complete (goal detail, deposits, withdrawals, and transaction history)
+- Spec 10 implemented (goal edit/delete actions and account menu)
 
 ## Current Goal
 
-- Let signed-in users open a goal, see its balance and progress, add or withdraw money, and review a permanent transaction history. Editing, deleting, and undoing transactions remain out of scope.
+- Let signed-in users manage goals and account access, with individual transaction records immutable unless their goal is deleted.
 
 ## Completed
 
@@ -77,6 +77,11 @@ change.
 - Added shadcn's Base UI Toast at `components/client/ui/toast.tsx`, mounted `<Toaster />` in the root layout, and installed `@base-ui/react` (the `radix-nova` style has no toast item).
 - Deposits and withdrawals now close the entry sheet/modal and show a success toast with the amount and the new balance. No Undo action is offered, since transactions are insert-only.
 - Verified with `npx convex codegen` (functions synced), `npx tsc --noEmit`, `npm run lint` (four generated-file warnings, no errors), and `npm run build`.
+- Spec 10: added an edit mutation and an edit form for goal name, optional target amount, and optional target date.
+- Added a three-dot menu to each goal card with Edit and Delete actions. Delete uses a confirmation dialog and an ownership-checked mutation; deleting a goal also deletes its transactions, as confirmed by the user because Finn does not move real money.
+- Updated the account header to show only a rounded profile photo at the top left, with Manage account and Sign out in its popover menu.
+- Verified with `npx convex codegen`, `npx tsc --noEmit`, and `npm run lint` (four generated-file warnings, no errors). `npm run build` compiles and passes TypeScript, but Next.js stops it with a security vulnerability upgrade reminder.
+- Responsive goal cards now switch to a single column below 360px, reduce their inner padding, and keep balance amounts untruncated at a viewport-scaled size so the peso symbol remains visible.
 
 ## In Progress
 
@@ -89,38 +94,11 @@ change.
 
 ## Open Questions
 
-- Spec 3 mentions "a new page for sign up" but the card title, link text, and screen list describe a sign-in screen. Built the sign-in page at `/sign-in`; the sign-up link points to `/sign-up`, which does not exist yet and was out of scope.
-- Spec 4 says the sign-up "Sign in" link has "no routes for now". Assumed this refers to auth/API wiring rather than navigation, so the link points to the existing `/sign-in` page. Confirm if it should be inert instead.
-- Verify password validates only that both fields match; there are no strength rules yet. Social buttons were removed from sign-up but remain on sign-in, since sign-in SSO is part of the product overview.
-- Ant Design is a deliberate exception to the shadcn-only rule, requested by Spec 5. The `Upload` has no endpoint, so it keeps files in local component state (`beforeUpload` returns `false`) and never posts anywhere; wiring it to Convex file storage is still open.
-- The `DatePicker` is a local composition of `Calendar` + `Popover`, since shadcn has no standalone date-picker registry item. It is uncontrolled by default and optionally controlled via `value` / `onChange`.
-- `AntUpload` reads `Date.now()` at module scope inside antd, which Next 16 flags during prerender. The home-page preview wraps it in `<Suspense>`. Any future usage needs the same boundary (or a client-only dynamic import).
-- The Clerk issuer domain and provider enablement are account configuration; environment files were not inspected.
-- Spec 8 asks for Ant Design's Modal and Progress, which conflicts with the shadcn-only rule in `ui-context.md`. The user confirmed Ant Design should be used as specced; the exception is now documented there and all Ant Design usage shares `FinnAntProvider`.
-- The spec's modal only mentions target amount and date, while the project overview makes the goal name required. The user confirmed a name field should be included.
-- New goals have no transactions yet, so their card balance and progress start at 0. The `transactions` table was added ahead of Spec 9 solely so `listGoals` can derive balances instead of storing one.
-- The home grid always ends with the "Add goal" tile, including when no goals exist yet. During loading, three skeleton cards appear before it.
-- Spec 9 mentions an "expense name" in transaction details. Interpreted as the optional note/description field, since deposits and withdrawals are not expenses and the data model already stores `note`.
-- Transaction history shows the running balance after each entry, which the project overview lists as a "nice addition" rather than a hard requirement.
-- Withdraw is disabled when the balance is zero. The server also rejects overdrafts, so hiding the button is never the only protection.
-- The supplied toast example shows an Undo action. Transaction toasts omit it because transactions are insert-only; a correction is a new opposite entry.
+None.
 
 ## Architecture Decisions
 
-- Light-only theme with no dark mode, matching the monochrome finance design language in the UI context.
-- `--background` and `--foreground` remain aliases of `--bg-base` and `--text-primary`; the shadcn semantic tokens are aliases too, so generated components inherit Finn colors without custom overrides.
-- Fonts are self-hosted through `next/font` and exposed as `--font-montserrat` / `--font-roboto-mono`, which the Tailwind theme maps to `font-sans` / `font-mono`.
-- shadcn `ui` components live in `components/client/ui/` and all carry `"use client"`, even when a specific component has no hooks.
-- Generated components import `cn` from the `cn` package; `lib/utils.ts` re-exports it as the shared utility entry point.
-- Ant Design usage is limited to the spec-mandated pieces (upload, goal modal and date field, goal progress circles); everything shares `FinnAntProvider`, a `ConfigProvider` theme built from `var(--token)` values, and the exception is documented in `ui-context.md`.
-- Goals store `targetAmount` in integer minor units and `targetDate` as a `YYYY-MM-DD` string; both are optional and omitted when empty.
-- `listGoals` computes each goal's balance by summing its transactions (deposit adds, withdraw subtracts). No balance field is stored on the goal.
-- Goal ownership uses the verified Clerk subject stored as `clerkId`, matching the existing `users` table; client-sent user ids are never trusted.
-- `recordTransaction` is the only transaction mutation; transactions stay insert-only and corrections are new opposite entries.
-- Goal ids from the URL are passed to Convex as strings and normalized with `ctx.db.normalizeId`. Invalid ids and goals owned by someone else return null or an empty list, or a not-found error on writes, without exposing data.
-- The goal detail entry form uses a shadcn Sheet on mobile and a centered Dialog on desktop, chosen with `useMediaQuery`, so both share one form and validation path.
-- Loading states use the shadcn `Skeleton` with reduced-motion support; the home grid shows three placeholder cards and keeps the add-goal tile available.
-- Toasts use shadcn's Base UI Toast because `radix-nova` does not ship a toast item. The manager lives in `components/client/ui/toast.tsx` and `<Toaster />` is mounted once at the root. Transaction toasts confirm success and show the new balance; they never offer Undo.
+Goal deletion permanently removes the goal and its transactions after explicit confirmation. Individual transaction edit/delete actions remain unavailable.
 
 ## Session Notes
 

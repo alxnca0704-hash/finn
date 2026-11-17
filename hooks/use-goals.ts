@@ -37,6 +37,8 @@ export function useGoal(goalId: string) {
 
 export function useGoalActions() {
   const createGoal = useMutation(api.goals.createGoal)
+  const updateGoal = useMutation(api.goals.updateGoal)
+  const deleteGoal = useMutation(api.goals.deleteGoal)
 
-  return { createGoal }
+  return { createGoal, updateGoal, deleteGoal }
 }

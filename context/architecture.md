@@ -40,7 +40,7 @@
 
 ## Invariants
 
-1. Transactions are insert-only. No mutation exists that edits or deletes an individual transaction. Corrections are made by adding an opposite transaction.
+1. Transactions cannot be edited or deleted individually. Corrections are made by adding an opposite transaction. When a user deletes a goal, its transactions are deleted with it because Finn tracks savings and does not move real money.
 2. A goal's balance is derived from its transactions and is never typed in or edited directly.
 3. A withdrawal can never exceed the goal's current balance, and every amount must be greater than zero. This is enforced inside the Convex mutation, not only in the form.
 4. Target amount and target date are always optional. The UI and the logic must work correctly when either or both are missing.

@@ -7,9 +7,11 @@ import {
   ArrowLeft,
   ArrowUpRight,
   Check,
+  Pencil,
 } from "lucide-react"
 
 import { TransactionDialog } from "@/components/client/transactions/transaction-dialog"
+import { EditGoalModal } from "@/components/client/goals/edit-goal-modal"
 import { TransactionHistory } from "@/components/client/transactions/transaction-history"
 import { Button } from "@/components/client/ui/button"
 import { Progress } from "@/components/client/ui/progress"
@@ -117,6 +119,7 @@ export function GoalDetail({ goalId }: { goalId: string }) {
   const { transactions, isLoading: isTransactionsLoading } =
     useTransactions(goalId)
   const [entry, setEntry] = useState<TransactionType | null>(null)
+  const [isEditing, setIsEditing] = useState(false)
 
   if (isLoading) return <GoalDetailSkeleton />
   if (!goal) return <GoalNotFound />
@@ -135,16 +138,22 @@ export function GoalDetail({ goalId }: { goalId: string }) {
       </div>
 
       <div className="flex w-full max-w-3xl flex-col gap-8">
-        <header className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold tracking-tight text-text-primary sm:text-3xl">
-            {goal.name}
-          </h1>
-          {goal.targetDate && (
-            <p className="font-mono text-xs text-text-muted">
-              {formatTargetDate(goal.targetDate)}.{" "}
-              {describeDeadline(goal.targetDate)}.
-            </p>
-          )}
+        <header className="flex items-start justify-between gap-4">
+          <div className="flex flex-col gap-1">
+            <h1 className="text-2xl font-semibold tracking-tight text-text-primary sm:text-3xl">
+              {goal.name}
+            </h1>
+            {goal.targetDate && (
+              <p className="font-mono text-xs text-text-muted">
+                {formatTargetDate(goal.targetDate)}.{" "}
+                {describeDeadline(goal.targetDate)}.
+              </p>
+            )}
+          </div>
+          <Button type="button" variant="outline" size="sm" onClick={() => setIsEditing(true)}>
+            <Pencil aria-hidden="true" />
+            Edit goal
+          </Button>
         </header>
 
         <section
@@ -237,6 +246,7 @@ export function GoalDetail({ goalId }: { goalId: string }) {
           if (!open) setEntry(null)
         }}
       />
+      <EditGoalModal goal={goal} open={isEditing} onClose={() => setIsEditing(false)} />
     </main>
   )
 }
