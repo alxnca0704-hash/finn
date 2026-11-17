@@ -82,6 +82,7 @@ change.
 - Updated the account header to show only a rounded profile photo at the top left, with Manage account and Sign out in its popover menu.
 - Verified with `npx convex codegen`, `npx tsc --noEmit`, and `npm run lint` (four generated-file warnings, no errors). `npm run build` compiles and passes TypeScript, but Next.js stops it with a security vulnerability upgrade reminder.
 - Responsive goal cards now switch to a single column below 360px, reduce their inner padding, and keep balance amounts untruncated at a viewport-scaled size so the peso symbol remains visible.
+- Removed Apple and Facebook from the sign-in social buttons; Google remains available.
 
 ## In Progress
 
